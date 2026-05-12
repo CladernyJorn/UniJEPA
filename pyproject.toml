@@ -1,17 +1,16 @@
 [project]
-name = "open-pi-zero"
+name = "unicod"
 version = "0.1.1"
 description = "Re-implementation of Pi0 vision-language-action (VLA) model from Physical Intelligence"
 authors = [
   {name = "Allen Z. Ren", email = "allenzren1@gmail.com"},
 ]
 readme = "README.md"
-requires-python = "==3.10.*"
+requires-python = "==3.11.*"
 classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    "bitsandbytes==0.45.0",
     "einops",
     "gsutil>=5.32",
     "hydra-core",
@@ -25,8 +24,6 @@ dependencies = [
     "protobuf==3.20.3",
     "tensorflow==2.15.0",
     "tensorflow_datasets==4.9.2",
-    "torch==2.5.0",
-    "transformers==4.47.1",
     "tqdm",
     "wandb",
 ]

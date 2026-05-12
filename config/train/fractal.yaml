@@ -3,14 +3,14 @@ defaults:
 hydra:
   run:
     dir: ${log_dir}
-_target_: src.agent.train.TrainAgent
+_target_: src.agent.train_unicod.TrainAgent
 
 log_dir: ${oc.env:VLA_LOG_DIR}/train/${name}/${now:%Y-%m-%d}_${now:%H-%M}_${seed}
 name: ${data.train.dataset_mix}_${data.train.split}_tp${horizon_steps}_${flow_sampling}
 device: cuda
 n_nodes: 1
 seed: 42
-pretrained_model_path: ${oc.env:TRANSFORMERS_CACHE}/paligemma-3b-pt-224
+pretrained_model_path: ${oc.env:TRANSFORMERS_CACHE}
 load_pretrained_weights: True
 resume_checkpoint_path:
 train_vlm: True
@@ -42,7 +42,7 @@ data:
     dataset_mix: fractal
     split: train[:95%]
     data_path: ${oc.env:VLA_DATA_DIR}/resize_224
-    window_size: ${cond_steps}
+    window_size: ${eval:'1+${horizon_steps}'} # get future predict image, origin: cond_steps
     action_horizon: ${horizon_steps}
     skip_unlabeled: True
     load_proprio: True
@@ -52,8 +52,8 @@ data:
     traj_read_threads: 10
 
 wandb:
-  entity: ${oc.env:VLA_WANDB_ENTITY}
-  project: open-pi-zero
+  entity: team_
+  project: unicod
   run: ${now:%H-%M-%S}_${name}
 
 log_freq: 16
@@ -64,11 +64,18 @@ save_model_start: ${eval:'3786400 // ${global_batch_size} * 3'}
 eval_freq: 2000
 eval_size: 1024
 eval_thresholds: [0.05, 0.1, 0.2, 0.3, 0.5]
-
+pred_dino: True # should be True
+dino_type: "dino_future_distill"
+num_dino_tokens: 256
 global_batch_size: 1024
 per_device_batch_size: 16
 action_lr: 5e-5
 vlm_lr: 5e-5
+dino_lr: 5e-5
+dino_lr_scheduler:
+  first_cycle_steps: 10000000 # basically no decaying
+  min_lr: 1e-8
+  warmup_steps: 200 # a bit of warmup
 action_lr_scheduler:
   first_cycle_steps: 10000000 # basically no decaying
   min_lr: 1e-8
@@ -79,6 +86,7 @@ vlm_lr_scheduler:
   warmup_steps: 200
 action_weight_decay: 0
 vlm_weight_decay: 0
+dino_weight_decay: 0
 max_grad_norm: 1.0
 
 flow_sampling: beta
@@ -103,6 +111,15 @@ mixture:
     use_lora: ${lora}
     adaptive_mode:  # not applicable for gemma
     rope_theta: 10000.0  # 10000 in gemma
+  dino:
+    hidden_size: 1152
+    intermediate_size: 4096
+    use_final_norm: True
+    cache: True
+    use_quantize: False
+    use_lora: False
+    adaptive_mode: ${action_expert_adaptive_mode}
+    rope_theta: ${action_expert_rope_theta}
   proprio:
     hidden_size: 1024
     intermediate_size: 4096

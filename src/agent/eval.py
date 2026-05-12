@@ -12,14 +12,16 @@ import numpy as np
 import simpler_env
 import torch
 
-from src.model.vla.pizero import PiZeroInference
+from src.model.vla.unicod import UniCoDInference
 from src.utils.monitor import log_allocated_gpu_memory, log_execution_time
 
 log = logging.getLogger(__name__)
 
 
 class EvalAgent:
+
     def __init__(self, cfg):
+        self.cfg = cfg
         self.n_eval_episode = cfg.n_eval_episode
         self.n_video = cfg.n_video
         self.log_dir = cfg.log_dir
@@ -29,14 +31,12 @@ class EvalAgent:
         # model
         self.device = torch.device(f"cuda:{cfg.gpu_id}")
         self.dtype = torch.bfloat16 if cfg.get("use_bf16", False) else torch.float32
-        self.model = PiZeroInference(cfg, use_ddp=False)
+        self.model = UniCoDInference(cfg, use_ddp=False)
         self.load_checkpoint(cfg.checkpoint_path)
         self.model.freeze_all_weights()
         self.model.to(self.dtype)
         self.model.to(self.device)
-        if cfg.get(
-            "use_torch_compile", True
-        ):  # model being compiled in the first batch which takes some time
+        if cfg.get("use_torch_compile", True):  # model being compiled in the first batch which takes some time
             self.model = torch.compile(
                 self.model,
                 mode="default",  # "reduce-overhead", max-autotune(-no-cudagraphs)
@@ -47,9 +47,7 @@ class EvalAgent:
         self.model.eval()
         log.info(f"Using cuda device: {self.device} dtype: {self.dtype}")
         log_allocated_gpu_memory(log, "loading model")
-        self.act_steps = (
-            cfg.act_steps
-        )  # e.g., run first two steps of predicted four steps
+        self.act_steps = (cfg.act_steps)  # e.g., run first two steps of predicted four steps
 
         # env --- no parallelized
         self.env = simpler_env.make(cfg.env.task)
@@ -90,21 +88,15 @@ class EvalAgent:
             video_writer = imageio.get_writer(video_parent_path(cnt_episode) + ".mp4")
         # is_final_subtask = env.is_final_subtask()
         log.info(
-            f"Reset info: {reset_info} Instruction: {instruction} Max episode length: {env.spec.max_episode_steps}"
-        )
+            f"Reset info: {reset_info} Instruction: {instruction} Max episode length: {env.spec.max_episode_steps}")
         # Bridge: {'scene_name': 'bridge_table_1_v1', 'scene_offset': None, 'scene_pose': None, 'scene_table_height': 0.87, 'urdf_version': '', 'rgb_overlay_path': '.../SimplerEnv/ManiSkill2_real2sim/data/real_inpainting/bridge_real_eval_1.png', 'rgb_overlay_cameras': ['3rd_view_camera'], 'rgb_overlay_mode': 'background', 'disable_bad_material': False, 'episode_model_ids': ['bridge_carrot_generated_modified', 'bridge_plate_objaverse_larger'], 'episode_model_scales': [1.0, 1.0], 'episode_source_obj_name': 'bridge_carrot_generated_modified', 'episode_target_obj_name': 'bridge_plate_objaverse_larger', 'episode_source_obj_init_pose_wrt_robot_base': Pose([0.381995, 0.104536, 0.0175282], [-0.706719, 0.0305475, -0.0305745, -0.706173]), 'episode_target_obj_init_pose_wrt_robot_base': Pose([0.232, -0.047, -0.000468373], [2.00041e-10, -5.10387e-07, -1.6915e-06, -1]), 'episode_id': 5}
         # Fractal: {'scene_name': 'google_pick_coke_can_1_v4', 'scene_offset': None, 'scene_pose': None, 'scene_table_height': 0.87, 'urdf_version': 'recolor_tabletop_visual_matching_1', 'rgb_overlay_path': '.../SimplerEnv/ManiSkill2_real2sim/data/real_inpainting/google_coke_can_real_eval_1.png', 'rgb_overlay_cameras': ['overhead_camera'], 'rgb_overlay_mode': 'background', 'disable_bad_material': False, 'model_id': 'opened_coke_can', 'model_scale': 1.0, 'distractor_model_ids': None, 'distractor_model_scales': None, 'obj_init_pose_wrt_robot_base': Pose([0.587925, -0.0238302, 0.840576], [0.707052, -0.0081018, -0.01162, -0.70702]), 'orientation': 'laid_vertically'} Instruction: pick coke can Max episode length: 80
         while 1:
             # infer action chunk
             inputs = self.env_adapter.preprocess(env, obs, instruction)
             causal_mask, vlm_position_ids, proprio_position_ids, action_position_ids = (
-                self.model.build_causal_mask_and_position_ids(
-                    inputs["attention_mask"], dtype=self.dtype
-                )
-            )
-            image_text_proprio_mask, action_mask = (
-                self.model.split_full_mask_into_submasks(causal_mask)
-            )
+                self.model.build_causal_mask_and_position_ids(inputs["attention_mask"], dtype=self.dtype))
+            image_text_proprio_mask, action_mask = (self.model.split_full_mask_into_submasks(causal_mask))
             inputs = {
                 "input_ids": inputs["input_ids"],
                 "pixel_values": inputs["pixel_values"].to(self.dtype),
@@ -125,7 +117,7 @@ class EvalAgent:
             env_actions = self.env_adapter.postprocess(actions[0].float().cpu().numpy())
 
             # environment step
-            for env_action in env_actions[: self.act_steps]:
+            for env_action in env_actions[:self.act_steps]:
                 obs, reward, success, truncated, info = env.step(env_action)
                 if truncated:
                     break
@@ -167,9 +159,7 @@ class EvalAgent:
                 )
                 recording = self.n_video > cnt_episode
                 if recording:
-                    video_writer = imageio.get_writer(
-                        video_parent_path(cnt_episode) + ".mp4"
-                    )
+                    video_writer = imageio.get_writer(video_parent_path(cnt_episode) + ".mp4")
 
         # summary
         success_rate = np.mean(successes)
@@ -185,5 +175,12 @@ class EvalAgent:
         data["model"] = {
             k.replace("_orig_mod.", ""): v for k, v in data["model"].items()
         }  # remove "_orig_mod." prefix if saved model was compiled
-        self.model.load_state_dict(data["model"], strict=True)
-        log.info(f"Loaded model from {path}")
+        strict = self.cfg.get("checkpoint_strict", False)
+        msg = self.model.load_state_dict(data["model"], strict=strict)
+        if strict:
+            log.info(f"Loaded model from {path} with strict=True")
+        else:
+            missing = len(msg.missing_keys)
+            unexpected = len(msg.unexpected_keys)
+            log.info(
+                f"Loaded model from {path} with strict=False (missing_keys={missing}, unexpected_keys={unexpected})")

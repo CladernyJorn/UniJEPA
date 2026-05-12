@@ -47,6 +47,10 @@ num_inference_steps: 10
 final_action_clip_value: 1.0  # data normalized in [-1,1]
 use_torch_compile: True
 use_bf16: False
+checkpoint_strict: False
+pred_dino: True
+dino_type: dino_future_distill
+num_dino_tokens: 256
 
 cond_steps: 1
 horizon_steps: 4
@@ -64,6 +68,15 @@ mixture:
     use_lora: ${lora}
     adaptive_mode:  # not applicable for gemma
     rope_theta: 10000.0  # 10000 in gemma
+  dino:
+    hidden_size: 1152
+    intermediate_size: 4096
+    use_final_norm: True
+    cache: True
+    use_quantize: False
+    use_lora: False
+    adaptive_mode: ${action_expert_adaptive_mode}
+    rope_theta: ${action_expert_rope_theta}
   proprio:
     hidden_size: 1024
     intermediate_size: 4096

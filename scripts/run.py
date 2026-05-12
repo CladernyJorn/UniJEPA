@@ -2,7 +2,11 @@
 Launcher for all experiments.
 
 """
+import os
 
+os.environ['HF_ENDPOINT'] = "https://hf-mirror.com"
+# os.environ['HF_HOME'] = '/mnt/huggingface'
+os.environ['WANDB_BASE_URL'] = 'https://api.bandw.top'
 import logging
 import math
 import os

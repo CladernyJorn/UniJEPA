@@ -36,9 +36,7 @@ def normalize(
     std: torch.FloatTensor,
 ) -> torch.FloatTensor:
     assert image.ndim == 4, f"Expected 4D tensor, got {image.ndim}D tensor."
-    assert (
-        image.shape[1] == 3
-    ), f"Expected 3 channels at axis 1, got {image.shape[1]} channels."
+    assert (image.shape[1] == 3), f"Expected 3 channels at axis 1, got {image.shape[1]} channels."
     mean = mean[None, :, None, None]  # add batch and spatial dimensions
     std = std[None, :, None, None]
     image = (image - mean) / std
@@ -64,11 +62,11 @@ class VLAProcessor:
     IMAGE_TOKEN = "<image>"
 
     def __init__(
-        self,
-        tokenizer,
-        num_image_tokens: int,
-        max_seq_len: int,
-        tokenizer_padding: str = "max_length",  #  # instead of truncating to longest
+            self,
+            tokenizer,
+            num_image_tokens: int,
+            max_seq_len: int,
+            tokenizer_padding: str = "max_length",  #  # instead of truncating to longest
     ):
         super().__init__()
 
@@ -79,12 +77,9 @@ class VLAProcessor:
         # Tokenizer described here: https://github.com/google-research/big_vision/blob/main/big_vision/configs/proj/paligemma/README.md#tokenizer
         tokens_to_add = {"additional_special_tokens": [self.IMAGE_TOKEN]}
         tokenizer.add_special_tokens(tokens_to_add)
-        EXTRA_TOKENS = [
-            f"<loc{i:04d}>" for i in range(1024)
-        ]  # These tokens are used for object detection (bounding boxes)
-        EXTRA_TOKENS += [
-            f"<seg{i:03d}>" for i in range(128)
-        ]  # These tokens are used for object segmentation
+        EXTRA_TOKENS = [f"<loc{i:04d}>" for i in range(1024)
+                       ]  # These tokens are used for object detection (bounding boxes)
+        EXTRA_TOKENS += [f"<seg{i:03d}>" for i in range(128)]  # These tokens are used for object segmentation
         tokenizer.add_tokens(EXTRA_TOKENS)
         self.image_token_id = tokenizer.convert_tokens_to_ids(self.IMAGE_TOKEN)
         # We will add the BOS and EOS tokens ourselves
@@ -98,17 +93,14 @@ class VLAProcessor:
         text: List[str],
         images: torch.LongTensor,
         truncation: bool = True,
+        rescale: bool = True,
     ) -> dict:
-        assert len(images) == len(
-            text
-        ), f"Received {len(images)} images for {len(text)} prompts."
-        assert (
-            images.dtype == torch.uint8
-        ), f"Expected uint8 tensor for images, got {images.dtype}."
+        assert len(images) == len(text), f"Received {len(images)} images for {len(text)} prompts."
+        assert (images.dtype == torch.uint8), f"Expected uint8 tensor for images, got {images.dtype}."
 
         pixel_values = process_images(
             images,
-            rescale_factor=1 / 255.0,
+            rescale_factor=1 / 255.0 if rescale else 1,
             image_mean=IMAGENET_STANDARD_MEAN,
             image_std=IMAGENET_STANDARD_STD,
         )
@@ -120,8 +112,7 @@ class VLAProcessor:
                 bos_token=self.tokenizer.bos_token,
                 image_seq_len=self.image_seq_length,
                 image_token=self.IMAGE_TOKEN,
-            )
-            for prompt in text
+            ) for prompt in text
         ]
 
         # Returns the input_ids and attention_mask as PyTorch tensors

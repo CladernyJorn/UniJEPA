@@ -7,7 +7,9 @@ logs/
 results/
 wandb/
 *.mp4
-
+unicod-demo/
+log/
+doc/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -15,7 +17,7 @@ __pycache__/
 
 # C extensions
 *.so
-
+draw_pic/
 # Distribution / packaging
 .Python
 build/

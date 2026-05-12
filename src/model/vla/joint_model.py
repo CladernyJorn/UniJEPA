@@ -74,9 +74,7 @@ def forward_mixture_layers(
                 hidden_states_pre_res[name],
                 time_cond,
             )
-            hidden_states_post_res[name] = (
-                residuals_pre_attn[name] + hidden_states_pre_res[name]
-            )
+            hidden_states_post_res[name] = (residuals_pre_attn[name] + hidden_states_pre_res[name])
     hidden_states_pre_post_attn = hidden_states_post_res
 
     # [Batch_Size, Seq_Len, Hidden_Size]
@@ -121,9 +119,7 @@ def forward_mixture_layers(
                 hidden_states_pre_final_res[name],
                 time_cond,
             )
-            hidden_states_final[name] = (
-                residuals_pre_post_attn[name] + hidden_states_pre_final_res[name]
-            )
+            hidden_states_final[name] = (residuals_pre_post_attn[name] + hidden_states_pre_final_res[name])
     return hidden_states_final
 
 
@@ -153,9 +149,7 @@ def forward_mixture_attn(
     query_states_all = {}
     for name in active_mixture_names:
         # [Batch_Size, Num_Heads_Q, Seq_Len, Head_Dim]
-        query_states = mixtures[name].attn_func(
-            "forward_q_proj", layer_idx, hidden_states_all[name]
-        )
+        query_states = mixtures[name].attn_func("forward_q_proj", layer_idx, hidden_states_all[name])
         query_states_all[name] = query_states
 
     # use kv caches from non-active mixtures
@@ -170,39 +164,33 @@ def forward_mixture_attn(
     for name in active_mixture_names:
         # prepare rope
         query_states = query_states_all[name]
-        rope_cos, rope_sin = mixtures[name].attn_func(
-            "forward_rotary_emb", layer_idx, query_states, position_ids_all[name]
-        )
+        rope_cos, rope_sin = mixtures[name].attn_func("forward_rotary_emb", layer_idx, query_states,
+                                                      position_ids_all[name])
 
         # always use kv cache if it has the current layer
         flag_cached_mixture = name in kv_caches and kv_caches[name].has_item(layer_idx)
         if flag_cached_mixture:
             key_states_cached, value_states_cached = kv_caches[name].get(
-                layer_idx
-            )  # note: rope already applied before they were cached
+                layer_idx)  # note: rope already applied before they were cached
 
         # always add to cache in append mode, or kv cache does not have the layer yet (in no_append mode)
-        flag_to_cache_mixture = (
-            name in kv_caches and not kv_caches[name].has_item(layer_idx)
-        ) or cache_mode == "append"
+        flag_to_cache_mixture = (name in kv_caches and
+                                 not kv_caches[name].has_item(layer_idx)) or cache_mode == "append"
 
         # calculate kv for new tokens if in append mode or this layer is not cached
         key_states_new, value_states_new = None, None
         flag_calc_new_kv = not flag_cached_mixture or cache_mode == "append"
-        assert flag_cached_mixture or flag_calc_new_kv, (
-            "Cannot skip new kv calculation while also not using cache!"
-        )
+        assert flag_cached_mixture or flag_calc_new_kv, ("Cannot skip new kv calculation while also not using cache!")
         if flag_calc_new_kv:
             hidden_states = hidden_states_all[name]
             # [Batch_Size, Num_Heads_KV, Seq_Len, Head_Dim]
-            key_states_new = mixtures[name].attn_func(
-                "forward_k_proj", layer_idx, hidden_states
-            )
-            value_states_new = mixtures[name].attn_func(
-                "forward_v_proj", layer_idx, hidden_states
-            )
+            key_states_new = mixtures[name].attn_func("forward_k_proj", layer_idx, hidden_states)
+            value_states_new = mixtures[name].attn_func("forward_v_proj", layer_idx, hidden_states)
 
             # [Batch_Size, Num_Heads_KV, Seq_Len, Head_Dim]
+            # print(name, "key_states_new.shape:", key_states_new.shape)  # dino 256
+            # print(name, "rope_cos.shape:", rope_cos.shape)  # dino 276
+            # print(name, "rope_sin.shape:", rope_sin.shape)  # dino 276
             key_states_new = mixtures[name].attn_func(
                 "forward_apply_rotary_emb",
                 layer_idx,
@@ -220,9 +208,7 @@ def forward_mixture_attn(
 
         # always apply rope to Q
         # [Batch_Size, Num_Heads_Q, Seq_Len, Head_Dim]
-        query_states = mixtures[name].attn_func(
-            "forward_apply_rotary_emb", layer_idx, query_states, rope_cos, rope_sin
-        )
+        query_states = mixtures[name].attn_func("forward_apply_rotary_emb", layer_idx, query_states, rope_cos, rope_sin)
         query_states_all[name] = query_states
 
         # assign K and V carefully for this active mixture
@@ -259,8 +245,7 @@ def forward_mixture_attn(
     # Perform the calculation as usual, Q * K^T / sqrt(head_dim)
     # [Batch_Size, Num_Heads_Q, Full_Seq_Len, Full_Seq_Len]
     attn_weights = torch.matmul(query_states, key_states.transpose(2, 3)) / math.sqrt(
-        mixtures[active_mixture_names[0]].head_dim
-    )
+        mixtures[active_mixture_names[0]].head_dim)
 
     # Soft capping
     attn_weights = attn_weights / attn_softclamp
@@ -270,9 +255,7 @@ def forward_mixture_attn(
     # Apply the softmax / dropout
     attn_weights = attn_weights + attention_mask
     # [Batch_Size, Num_Heads_Q, Full_Seq_Len, Full_Seq_Len]
-    attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(
-        query_states.dtype
-    )
+    attn_weights = nn.functional.softmax(attn_weights, dim=-1, dtype=torch.float32).to(query_states.dtype)
     attn_weights = nn.functional.dropout(
         attn_weights,
         p=attention_dropout,
@@ -288,9 +271,7 @@ def forward_mixture_attn(
 
     # Split into the different mixtures
     attn_outputs = torch.split(attn_output, q_lens, dim=1)
-    attn_outputs = {
-        key: value for key, value in zip(active_mixture_names, attn_outputs)
-    }
+    attn_outputs = {key: value for key, value in zip(active_mixture_names, attn_outputs)}
 
     # Multiply by W_o. [Batch_Size, Seq_Len_Q, Hidden_Size]
     attn_outputs_final = {}
@@ -298,22 +279,20 @@ def forward_mixture_attn(
         if name in post_attn_skip_names:
             attn_outputs_final[name] = None
         else:
-            attn_outputs_final[name] = mixtures[name].attn_func(
-                "forward_o_proj", layer_idx, attn_outputs[name]
-            )
+            attn_outputs_final[name] = mixtures[name].attn_func("forward_o_proj", layer_idx, attn_outputs[name])
     return attn_outputs_final
 
 
 # should have named this `MoE`
 class JointModel(nn.Module):
+
     def __init__(self, config):
         super().__init__()
         self.config = config
         self.num_hidden_layers = config.num_hidden_layers
         self.num_mixture = len(config.mixture)
-        self.cache_names = [
-            name for name in config.mixture if config.mixture[name].cache
-        ]  # name of the mixtures that use cache during generation; no cache during training
+        self.cache_names = [name for name in config.mixture if config.mixture[name].cache
+                           ]  # name of the mixtures that use cache during generation; no cache during training
 
         # Mixtures
         self.mixtures = nn.ModuleDict()
@@ -366,18 +345,14 @@ class JointModel(nn.Module):
                 time_cond=time_cond,
                 kv_caches=kv_caches,
                 cache_mode=cache_mode,
-                post_attn_skip_names=final_layer_post_attn_skip_names
-                if is_final_layer
-                else [],
+                post_attn_skip_names=final_layer_post_attn_skip_names if is_final_layer else [],
             )
 
         # [Batch_Size, Seq_Len, Hidden_Size]
         hidden_states_all = {}
         for name in active_mixture_names:
             if name not in final_layer_post_attn_skip_names:
-                hidden_states_all[name] = self.mixtures[name].forward_norm(
-                    embeds_all[name], time_cond
-                )
+                hidden_states_all[name] = self.mixtures[name].forward_norm(embeds_all[name], time_cond)
         if return_caches:
             return hidden_states_all, kv_caches
         return hidden_states_all
