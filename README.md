@@ -1,6 +1,17 @@
 <div align="center">
 <h2><center>👉 UniCoD: Enhancing Robot Policy via Unified Continuous and Discrete Representation Learning</h2>
-[Jianke Zhang](https://scholar.google.com/citations?user=6is33pIAAAAJ&hl=zh-CN), [Yucheng Hu](https://scholar.google.com/citations?user=WamdPtwAAAAJ&hl=zh-CN), [Yanjiang Guo](), [Xiaoyu Chen](), [Yichen Liu](), [Wenna Chen](), [Chaochao Lu](), [Jianyu Chen]()
+
+<p>
+  <a href="https://scholar.google.com/citations?user=6is33pIAAAAJ&hl=zh-CN">Jianke Zhang</a>,
+  <a href="https://scholar.google.com/citations?user=WamdPtwAAAAJ&hl=zh-CN">Yucheng Hu</a>,
+  <a href="">Yanjiang Guo</a>,
+  <a href="">Xiaoyu Chen</a>,
+  <a href="">Yichen Liu</a>,
+  <a href="">Wenna Chen</a>,
+  <a href="">Chaochao Lu</a>,
+  <a href="">Jianyu Chen</a>
+</p>
+
 <a href='https://arxiv.org/abs/2510.10642'><img src='https://img.shields.io/badge/ArXiv-2510.10642-red'></a>
 <a href='https://doi.org/10.48550/arXiv.2510.10642'><img src='https://img.shields.io/badge/DOI-10.48550%2FarXiv.2510.10642-blue'></a>
 <a href='https://sites.google.com/view/unicod1'><img src='https://img.shields.io/badge/Project-Page-Blue'></a>
