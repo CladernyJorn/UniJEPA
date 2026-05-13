@@ -54,7 +54,7 @@ from src.model.vla.processing import VLAProcessor
 log = logging.getLogger(__name__)
 
 
-class UniCoD(nn.Module, NoSyncBase):
+class UniJEPA(nn.Module, NoSyncBase):
 
     @log_execution_time(log)
     def __init__(self, cfg, use_ddp: bool = False):
@@ -848,7 +848,7 @@ class UniCoD(nn.Module, NoSyncBase):
         #return torch.mean((v_psi - d_psi) ** 2)
 
 
-class UniCoDInference(UniCoD):
+class UniJEPAInference(UniJEPA):
 
     def forward(
         self,
@@ -896,12 +896,12 @@ if __name__ == "__main__":
 
     torch.manual_seed(args.seed)
 
-    config = OmegaConf.load("/mnt/unicod/config/train/bridge_dino.yaml")
+    config = OmegaConf.load("/mnt/unijepa/config/train/bridge_dino.yaml")
     if args.text_only:
         config.use_lm_head = True
         config.mixture.vlm.use_final_norm = True
     device = "cpu" if args.cpu else "cuda"
-    model = UniCoD(config)
+    model = UniJEPA(config)
     model.tie_action_proprio_weights()
     if args.load_pretrained_weights:
         model.load_pretrained_weights()
@@ -914,7 +914,7 @@ if __name__ == "__main__":
     # dummy image --- replace the first image with a real one
     bsz = 1 if args.text_only else 2
     dummy_images = torch.randint(0, 256, (bsz, 3, 224, 224), dtype=torch.uint8)  # not used if text_only
-    real_image_path = "/mnt/unicod/media/maniskill_pp.png"
+    real_image_path = "/mnt/unijepa/media/maniskill_pp.png"
     real_image = Image.open(real_image_path).convert("RGB")
     real_image_t = torch.as_tensor(np.array(real_image.resize((224, 224))).transpose(2, 0, 1))
     dummy_images[0] = real_image_t

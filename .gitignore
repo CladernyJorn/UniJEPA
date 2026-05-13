@@ -7,7 +7,7 @@ logs/
 results/
 wandb/
 *.mp4
-unicod-demo/
+unijepa-demo/
 log/
 doc/
 # Byte-compiled / optimized / DLL files

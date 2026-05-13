@@ -12,7 +12,7 @@ import numpy as np
 import simpler_env
 import torch
 
-from src.model.vla.unicod import UniCoDInference
+from src.model.vla.unijepa import UniJEPAInference
 from src.utils.monitor import log_allocated_gpu_memory, log_execution_time
 
 log = logging.getLogger(__name__)
@@ -31,7 +31,7 @@ class EvalAgent:
         # model
         self.device = torch.device(f"cuda:{cfg.gpu_id}")
         self.dtype = torch.bfloat16 if cfg.get("use_bf16", False) else torch.float32
-        self.model = UniCoDInference(cfg, use_ddp=False)
+        self.model = UniJEPAInference(cfg, use_ddp=False)
         self.load_checkpoint(cfg.checkpoint_path)
         self.model.freeze_all_weights()
         self.model.to(self.dtype)

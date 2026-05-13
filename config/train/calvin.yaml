@@ -3,7 +3,7 @@ defaults:
 hydra:
   run:
     dir: ${log_dir}
-_target_: src.agent.train_unicod.TrainAgent
+_target_: src.agent.train_unijepa.TrainAgent
 
 log_dir: ${oc.env:VLA_LOG_DIR}/train/${name}/${now:%Y-%m-%d}_${now:%H-%M}_${seed}
 name: calvin_tp${horizon_steps}_${flow_sampling}
@@ -75,7 +75,7 @@ data:
 
 wandb:
   entity: team_
-  project: unicod
+  project: unijepa
   run: ${now:%H-%M-%S}_${name}
 
 log_freq: 160

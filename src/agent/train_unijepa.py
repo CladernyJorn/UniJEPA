@@ -19,7 +19,7 @@ from transformers import AutoTokenizer
 import wandb
 from src.agent.dataset import TorchRLDSInterleavedDataset
 from src.agent.model_averaging import ModelAveraging
-from src.model.vla.unicod import UniCoD
+from src.model.vla.unijepa import UniJEPA
 from src.model.vla.processing import VLAProcessor
 from src.utils.decorator import main_rank_only
 from src.utils.metric import get_action_accuracy
@@ -95,7 +95,7 @@ class TrainAgent:
         self.pred_dino = cfg.pred_dino
         if self.pred_dino:
             self.dino_type = cfg.dino_type
-        self.model = UniCoD(cfg, use_ddp=self.multi_gpu)
+        self.model = UniJEPA(cfg, use_ddp=self.multi_gpu)
         if cfg.resume_checkpoint_path:
             self.load_checkpoint(cfg.resume_checkpoint_path)
         elif cfg.load_pretrained_weights:

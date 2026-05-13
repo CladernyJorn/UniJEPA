@@ -1,5 +1,5 @@
 <div align="center">
-<h2><center>👉 UniCoD: Enhancing Robot Policy via Unified Continuous and Discrete Representation Learning</h2>
+<h2><center>👉 UniJEPA: Enhancing Robot Policy via Unified Continuous and Discrete Representation Learning</h2>
 
 <p>
   <a href="https://scholar.google.com/citations?user=6is33pIAAAAJ&hl=zh-CN">Jianke Zhang</a>,
@@ -14,22 +14,22 @@
 
 <a href='https://arxiv.org/abs/2510.10642'><img src='https://img.shields.io/badge/ArXiv-2510.10642-red'></a>
 <a href='https://doi.org/10.48550/arXiv.2510.10642'><img src='https://img.shields.io/badge/DOI-10.48550%2FarXiv.2510.10642-blue'></a>
-<a href='https://sites.google.com/view/unicod1'><img src='https://img.shields.io/badge/Project-Page-Blue'></a>
+<a href='https://sites.google.com/view/unijepa1'><img src='https://img.shields.io/badge/Project-Page-Blue'></a>
 
 </div>
 
 <div align=center>
-<img src="media/overview.png" alt="UniCoD samples" align="middle"/>
+<img src="media/overview.png" alt="UniJEPA samples" align="middle"/>
 </div>
 
-UniCoD first employ Jepa-style world-moding under latent feature space into VLA domain. It unifies continuous control representation and discrete semantic representation for robot policy learning.  
+UniJEPA first employ Jepa-style world-moding under latent feature space into VLA domain. It unifies continuous control representation and discrete semantic representation for robot policy learning.  
 This repository includes complete **Bridge** and **Fractal** training + SimplerEnv evaluation workflows.
 
 ## Installation 🛠️
 
 ```bash
 git clone <your_repo_url>
-cd UniCoD-public
+cd UniJEPA-public
 uv sync
 ```
 
@@ -44,7 +44,7 @@ If you evaluate in SimplerEnv:
 ```bash
 cd ..
 git clone https://github.com/allenzren/SimplerEnv --recurse-submodules
-cd UniCoD-public
+cd UniJEPA-public
 uv pip install -e ../SimplerEnv
 uv pip install -e ../SimplerEnv/ManiSkill2_real2sim
 ```
@@ -87,18 +87,18 @@ bash slurm/modify_rlds.sh
 - Optional mirror endpoints in `scripts/run.py` (`HF_ENDPOINT`, `WANDB_BASE_URL`)
 - Optional `dino_model_path` if your setup requires explicit DINO checkpoint path
 
-## Train UniCoD 🛸
+## Train UniJEPA 🛸
 
 ### 🛸 Bridge Training
 
 ```bash
-bash slurm/train_unicod_bridge.sh
+bash slurm/train_unijepa_bridge.sh
 ```
 
 ### 🛸 Fractal Training
 
 ```bash
-bash slurm/train_unicod_fractal.sh
+bash slurm/train_unijepa_fractal.sh
 ```
 
 ## Evaluation 📊
@@ -120,8 +120,8 @@ bash slurm/eval_simpler_fractal.sh
 🌟 If you find this project useful, please cite:
 
 ```bibtex
-@article{zhang2025unicod,
-  title={UniCoD: Enhancing Robot Policy via Unified Continuous and Discrete Representation Learning},
+@article{zhang2025unijepa,
+  title={UniJEPA: Enhancing Robot Policy via Unified Continuous and Discrete Representation Learning},
   author={Zhang, Jianke and Hu, Yucheng and Guo, Yanjiang and Chen, Xiaoyu and Liu, Yichen and Chen, Wenna and Lu, Chaochao and Chen, Jianyu},
   journal={arXiv preprint arXiv:2510.10642},
   year={2025}
