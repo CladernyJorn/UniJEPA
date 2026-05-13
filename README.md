@@ -28,8 +28,8 @@ This repository includes complete **Bridge** and **Fractal** training + SimplerE
 ## Installation 🛠️
 
 ```bash
-git clone <your_repo_url>
-cd UniJEPA-public
+git clone git@github.com:CladernyJorn/UniJEPA.git
+cd UniJEPA
 uv sync
 ```
 
