@@ -1,10 +1,6 @@
 [project]
 name = "unijepa"
 version = "0.1.1"
-description = "Re-implementation of Pi0 vision-language-action (VLA) model from Physical Intelligence"
-authors = [
-  {name = "Allen Z. Ren", email = "allenzren1@gmail.com"},
-]
 readme = "README.md"
 requires-python = "==3.11.*"
 classifiers = [
