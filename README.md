@@ -14,7 +14,7 @@
 
 <a href='https://arxiv.org/abs/2510.10642'><img src='https://img.shields.io/badge/ArXiv-2510.10642-red'></a>
 <a href='https://doi.org/10.48550/arXiv.2510.10642'><img src='https://img.shields.io/badge/DOI-10.48550%2FarXiv.2510.10642-blue'></a>
-<a href='https://sites.google.com/view/unijepa1'><img src='https://img.shields.io/badge/Project-Page-Blue'></a>
+<a href='https://sites.google.com/view/unijepa'><img src='https://img.shields.io/badge/Project-Page-Blue'></a>
 
 </div>
 
