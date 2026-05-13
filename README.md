@@ -120,8 +120,8 @@ bash slurm/eval_simpler_fractal.sh
 🌟 If you find this project useful, please cite:
 
 ```bibtex
-@article{zhang2025unijepa,
-  title={UniJEPA: Enhancing Robot Policy via Unified Continuous and Discrete Representation Learning},
+@article{zhang2025unicod,
+  title={UniCoD: Enhancing Robot Policy via Unified Continuous and Discrete Representation Learning},
   author={Zhang, Jianke and Hu, Yucheng and Guo, Yanjiang and Chen, Xiaoyu and Liu, Yichen and Chen, Wenna and Lu, Chaochao and Chen, Jianyu},
   journal={arXiv preprint arXiv:2510.10642},
   year={2025}
